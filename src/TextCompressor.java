@@ -33,7 +33,7 @@ public class TextCompressor {
 
     private static void compress() {
         String[] words = {"the", "and", "i", "to", "of", "a",
-                "you", "my", "in", "that", "is", "not", "with", "me", "it", "alice"};
+                "you", "my", "in", "that", "is", "not", "with", "me", "it"};
         HashMap<String, Integer> common = new HashMap<>();
         for (int i = 0; i < words.length; i++) common.put(words[i], i + 1);
 
@@ -48,23 +48,47 @@ public class TextCompressor {
                 x++;
             }
             BinaryStdOut.write(0, 8);
+            x = 0;
         }
 
-
-        BinaryStdOut.write();
         String input = BinaryStdIn.readString();
         int length = input.length();
-        String indexing = input;
-        int current = 0;
         int end = input.indexOf(" ");
+        int check;
+        String in;
+        int startR;
+        String first = input.substring(0, end);
+        if (common.get(first) == null) {
+            BinaryStdOut.write(8, 4);
+            for (int i = 0; i < first.length(); i++) {
+                BinaryStdOut.write(first.charAt(i), 8);
+            }
+        }
+        else {
+            BinaryStdOut.write(4, 4);
+            BinaryStdOut.write(common.get(first), 4);
 
-        while (end < length) {
-            if (common.get(input.substring(current, end)) == null) {
+        }
+
+        String indexing = input.substring(end + 1);
+        end = indexing.indexOf(" ");
+
+        while (end != -1) {
+            in = input.substring(0, end);
+            if (common.get(in) == null) {
                 // write each char value out and then a 0;
-            }
-            else {
+                BinaryStdOut.write(0, 4);
+                for (int i = 0; i < in.length(); i++) {
+                    BinaryStdOut.write(in.charAt(i), 8);
+                }
+            } else {
                 // write corresponding value of word into the file
+                BinaryStdOut.write(0, 8);
+                BinaryStdOut.write(common.get(in), 4);
             }
+
+            indexing = indexing.substring(end + 1);
+            end = indexing.indexOf(" ");
         }
 
 
@@ -72,10 +96,56 @@ public class TextCompressor {
     }
 
     private static void expand() {
+        int r = 4;
+        int runs = BinaryStdIn.readInt(r);
+        HashMap<Integer, String> common = new HashMap<>();
+        r = r(r);
 
-        // TODO: Complete the expand() method
+        StringBuilder s = new StringBuilder();
+        char c;
+        int i = 1;
+
+        while (runs != 0) {
+            c = BinaryStdIn.readChar();
+            while (c != 0) {
+                s.append(c);
+                c = BinaryStdIn.readChar();
+            }
+
+            common.put(i, String.valueOf(s));
+            s = new StringBuilder();
+            i++;
+            runs--;
+        }
+
+        r = r(r);
+
+        r = BinaryStdIn.readInt(4);
+
+        int check;
+
+        while (!BinaryStdIn.isEmpty()) {
+            check = BinaryStdIn.readInt(r);
+            if (check == 0) {
+                r = r(r);
+                BinaryStdOut.write(" ");
+            }
+            else {
+                if (rIs4(r)) BinaryStdOut.write(common.get(check));
+                else BinaryStdOut.write((char) check);
+            }
+        }
 
         BinaryStdOut.close();
+    }
+
+    private static int r(int r) {
+        if (r == 4) return 8;
+        return 4;
+    }
+
+    private static boolean rIs4(int r) {
+        return r == 4;
     }
 
     public static void main(String[] args) {
