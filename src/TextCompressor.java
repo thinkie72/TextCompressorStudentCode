@@ -21,17 +21,52 @@
  *  = 43.54% compression ratio!
  ******************************************************************************/
 
+import java.util.HashMap;
+
 /**
  *  The {@code TextCompressor} class provides static methods for compressing
  *  and expanding natural language through textfile input.
  *
- *  @author Zach Blick, YOUR NAME HERE
+ *  @author Zach Blick, Tyler Hinkie
  */
 public class TextCompressor {
 
     private static void compress() {
+        String[] words = {"the", "and", "i", "to", "of", "a",
+                "you", "my", "in", "that", "is", "not", "with", "me", "it", "alice"};
+        HashMap<String, Integer> common = new HashMap<>();
+        for (int i = 0; i < words.length; i++) common.put(words[i], i + 1);
 
-        // TODO: Complete the compress() method
+        BinaryStdOut.write(words.length, 4);
+
+        int x = 0;
+        int sLength;
+        for (String s : words) {
+            sLength = s.length();
+            while (x < sLength) {
+                BinaryStdOut.write(s.charAt(x), 8);
+                x++;
+            }
+            BinaryStdOut.write(0, 8);
+        }
+
+
+        BinaryStdOut.write();
+        String input = BinaryStdIn.readString();
+        int length = input.length();
+        String indexing = input;
+        int current = 0;
+        int end = input.indexOf(" ");
+
+        while (end < length) {
+            if (common.get(input.substring(current, end)) == null) {
+                // write each char value out and then a 0;
+            }
+            else {
+                // write corresponding value of word into the file
+            }
+        }
+
 
         BinaryStdOut.close();
     }
