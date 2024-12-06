@@ -21,8 +21,6 @@
  *  = 43.54% compression ratio!
  ******************************************************************************/
 
-import java.util.HashMap;
-
 /**
  *  The {@code TextCompressor} class provides static methods for compressing
  *  and expanding natural language through textfile input.
@@ -32,108 +30,60 @@ import java.util.HashMap;
 public class TextCompressor {
 
     private static void compress() {
-        String[] words = {"the", "and", "i", "to", "of", "a",
-                "you", "my", "in", "that", "is", "not", "with", "me", "it"};
-        HashMap<String, Integer> common = new HashMap<>();
-        for (int i = 0; i < words.length; i++) common.put(words[i], i + 1);
-
-        BinaryStdOut.write(words.length, 4);
-
-        int x = 0;
-        int sLength;
-        for (String s : words) {
-            sLength = s.length();
-            while (x < sLength) {
-                BinaryStdOut.write(s.charAt(x), 8);
-                x++;
-            }
-            BinaryStdOut.write(0, 8);
-            x = 0;
+        TST codes = new TST();
+        for (int i = 0; i < 128; i++) {
+            codes.insert("" + (char) i, i);
         }
 
-        String input = BinaryStdIn.readString();
-        int length = input.length();
-        int end = input.indexOf(" ");
-        int check;
-        String in;
-        int startR;
-        String first = input.substring(0, end);
-        if (common.get(first) == null) {
-            BinaryStdOut.write(8, 4);
-            for (int i = 0; i < first.length(); i++) {
-                BinaryStdOut.write(first.charAt(i), 8);
-            }
-        }
-        else {
-            BinaryStdOut.write(4, 4);
-            BinaryStdOut.write(common.get(first), 4);
+        codes.insert("π", 128);
 
-        }
 
-        String indexing = input.substring(end + 1);
-        end = indexing.indexOf(" ");
 
-        while (end != -1) {
-            in = input.substring(0, end);
-            if (common.get(in) == null) {
-                // write each char value out and then a 0;
-                BinaryStdOut.write(0, 4);
-                for (int i = 0; i < in.length(); i++) {
-                    BinaryStdOut.write(in.charAt(i), 8);
+        int currentCode = 129;
+        final int MAX_CODE = 4096;
+
+
+//        read data into String text
+        String text = BinaryStdIn.readString();
+//                index = 0
+        int length = text.length();
+        int index = 0;
+        String prefix;
+        int code;
+        int next;
+//        while index < text.length:
+        while (index < length) {
+            prefix = codes.getLongestPrefix(text, index);
+//        prefix = longest coded word that matches text @ index
+
+//        write out that code
+            BinaryStdOut.write(codes.lookup(prefix), 12);
+//        if possible, look ahead to the next character
+            next = index + prefix.length();
+//        append that character to prefix
+            if (next < length) {
+                if (currentCode < MAX_CODE) {
+                    codes.insert(prefix + text.charAt(next), currentCode);
+                    currentCode++;
                 }
-            } else {
-                // write corresponding value of word into the file
-                BinaryStdOut.write(0, 8);
-                BinaryStdOut.write(common.get(in), 4);
             }
 
-            indexing = indexing.substring(end + 1);
-            end = indexing.indexOf(" ");
+            index += prefix.length();
+//        associate prefix with the next code (if available)
+//        index += prefix.length
+//        write out EOF and close
         }
 
+        BinaryStdOut.write(codes.lookup("π"), 12);
 
         BinaryStdOut.close();
     }
 
     private static void expand() {
-        int r = 4;
-        int runs = BinaryStdIn.readInt(r);
-        HashMap<Integer, String> common = new HashMap<>();
-        r = r(r);
+        String[] prefixes = new String[4096];
 
-        StringBuilder s = new StringBuilder();
-        char c;
-        int i = 1;
-
-        while (runs != 0) {
-            c = BinaryStdIn.readChar();
-            while (c != 0) {
-                s.append(c);
-                c = BinaryStdIn.readChar();
-            }
-
-            common.put(i, String.valueOf(s));
-            s = new StringBuilder();
-            i++;
-            runs--;
-        }
-
-        r = r(r);
-
-        r = BinaryStdIn.readInt(4);
-
-        int check;
-
-        while (!BinaryStdIn.isEmpty()) {
-            check = BinaryStdIn.readInt(r);
-            if (check == 0) {
-                r = r(r);
-                BinaryStdOut.write(" ");
-            }
-            else {
-                if (rIs4(r)) BinaryStdOut.write(common.get(check));
-                else BinaryStdOut.write((char) check);
-            }
+        for (int i = 0; i < 128; i++) {
+            prefixes[i] = "" + (char) i;
         }
 
         BinaryStdOut.close();
