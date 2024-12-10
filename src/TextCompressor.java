@@ -31,15 +31,13 @@ public class TextCompressor {
 
     private static void compress() {
         TST codes = new TST();
-        for (int i = 0; i < 128; i++) {
+        for (int i = 0; i < 256; i++) {
             codes.insert("" + (char) i, i);
         }
 
-        codes.insert("π", 128);
+        codes.insert("π", 256);
 
-
-
-        int currentCode = 129;
+        int currentCode = 257;
         final int MAX_CODE = 4096;
 
 
@@ -82,20 +80,33 @@ public class TextCompressor {
     private static void expand() {
         String[] prefixes = new String[4096];
 
-        for (int i = 0; i < 128; i++) {
+        for (int i = 0; i < 256; i++) {
             prefixes[i] = "" + (char) i;
         }
 
+        int currentCode = 257;
+        int maxCode = 4096;
+
+        String prefix;
+        String nextPrefix;
+        int code = BinaryStdIn.readInt(12);
+        int nextCode = BinaryStdIn.readInt(12);
+
+        while (!BinaryStdIn.isEmpty()) {
+            prefix = prefixes[code];
+            BinaryStdOut.write(prefix);
+            if (prefixes[nextCode] == null) prefixes[nextCode] = prefix + prefix.charAt(0);
+            if (currentCode < maxCode) {
+                prefixes[currentCode] = prefix + prefixes[nextCode];
+                currentCode++;
+            }
+            code = nextCode;
+            if (code != 256) nextCode = BinaryStdIn.readInt(12);
+        }
+
+        BinaryStdOut.write(prefixes[currentCode]);
+
         BinaryStdOut.close();
-    }
-
-    private static int r(int r) {
-        if (r == 4) return 8;
-        return 4;
-    }
-
-    private static boolean rIs4(int r) {
-        return r == 4;
     }
 
     public static void main(String[] args) {
