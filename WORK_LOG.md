@@ -7,6 +7,7 @@ Name: Tyler Hinkie
 | December 4  |  9:30-11pm   |                                                                                                     I tried this attempt, but ultimately failed. I think my logic is wrong somewhere, likely in the StringBuilder portion. Excited to learn a better way tomorrow... |
 | December 6  |    2-3pm     |                                I mostly completed the implementatin of expand using the pseudocode provided. I still have a little ways to go because of a index out of bounds error. I'm pretty close to finishing this part, so I'll get to work on expand soon... |
 | December 10 | 12:45-1:45pm |    I feel pretty close to the solution. My expanded file has a lot of intelligible words and phrases, but then some jumbled letters too. I need to figure out how to prevent this, probably a small logic error in compress or expand. I'm excited to finish this... |
+| December 11 |  10-10:30pm  |                                                                                                                                 I got it to work. My compression ratios seem good, with about 53% for shakespeare. I commented my code and finished. LZW is awesome. |
 
 
 To add a new row to the table, click into a cell and then hit shift-enter.

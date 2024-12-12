@@ -22,95 +22,94 @@
  ******************************************************************************/
 
 /**
- *  The {@code TextCompressor} class provides static methods for compressing
- *  and expanding natural language through textfile input.
+ * The {@code TextCompressor} class provides static methods for compressing
+ * and expanding natural language through textfile input.
  *
- *  @author Zach Blick, Tyler Hinkie
+ * @author Zach Blick, Tyler Hinkie
  */
 public class TextCompressor {
 
     private static void compress() {
+        // Creates TST for codes
         TST codes = new TST();
         for (int i = 0; i < 256; i++) {
             codes.insert("" + (char) i, i);
         }
 
-        codes.insert("π", 256);
-
+        // Variable to start new code assignments
         int currentCode = 257;
-        final int MAX_CODE = 4096;
+        // 1 more than maximum number represented with 12 bit ASCII codes
+        final int maxCode = 4096;
+        final int bits = 12;
 
-
-//        read data into String text
         String text = BinaryStdIn.readString();
-//                index = 0
         int length = text.length();
         int index = 0;
         String prefix;
-        int code;
         int next;
-//        while index < text.length:
+
         while (index < length) {
             prefix = codes.getLongestPrefix(text, index);
-//        prefix = longest coded word that matches text @ index
 
-//        write out that code
-            BinaryStdOut.write(codes.lookup(prefix), 12);
-//        if possible, look ahead to the next character
+            BinaryStdOut.write(codes.lookup(prefix), bits);
+
             next = index + prefix.length();
-//        append that character to prefix
-            if (next < length) {
-                if (currentCode < MAX_CODE) {
-                    codes.insert(prefix + text.charAt(next), currentCode);
-                    currentCode++;
-                }
-            }
+
+            // Insert new prefix and next character into the TST if there's space
+            if (next < length && currentCode < maxCode) codes.insert(prefix + text.charAt(next), currentCode++);
 
             index += prefix.length();
-//        associate prefix with the next code (if available)
-//        index += prefix.length
-//        write out EOF and close
         }
 
-        BinaryStdOut.write(codes.lookup("π"), 12);
+        // Write the EOF code
+        BinaryStdOut.write(256, bits);
 
         BinaryStdOut.close();
     }
 
     private static void expand() {
-        String[] prefixes = new String[4096];
+        final int bits = 12;
 
+        String[] prefixes = new String[4096];
         for (int i = 0; i < 256; i++) {
             prefixes[i] = "" + (char) i;
         }
 
+        // See comment in compress()
         int currentCode = 257;
-        int maxCode = 4096;
+        final int maxCode = 4096;
 
-        String prefix;
+        // Read first prefix
+        String prefix = prefixes[BinaryStdIn.readInt(bits)];
+        // Write first prefix
+        BinaryStdOut.write(prefix);
+        int nextCode;
         String nextPrefix;
-        int code = BinaryStdIn.readInt(12);
-        int nextCode = BinaryStdIn.readInt(12);
 
         while (!BinaryStdIn.isEmpty()) {
-            prefix = prefixes[code];
-            BinaryStdOut.write(prefix);
-            if (prefixes[nextCode] == null) prefixes[nextCode] = prefix + prefix.charAt(0);
-            if (currentCode < maxCode) {
-                prefixes[currentCode] = prefix + prefixes[nextCode];
-                currentCode++;
-            }
-            code = nextCode;
-            if (code != 256) nextCode = BinaryStdIn.readInt(12);
-        }
+            nextCode = BinaryStdIn.readInt(bits);
 
-        BinaryStdOut.write(prefixes[currentCode]);
+            // End if EOF code
+            if (nextCode == 256) break;
+
+            // Handle edge case where the next code doesn't exist yet
+            if (prefixes[nextCode] == null) nextPrefix = prefix + prefix.charAt(0);
+            else nextPrefix = prefixes[nextCode];
+
+            BinaryStdOut.write(nextPrefix);
+
+            // Add new code to the table if there's empty space
+            if (currentCode < maxCode) prefixes[currentCode++] = prefix + nextPrefix.charAt(0);
+
+            prefix = nextPrefix;
+        }
 
         BinaryStdOut.close();
     }
 
+
     public static void main(String[] args) {
-        if      (args[0].equals("-")) compress();
+        if (args[0].equals("-")) compress();
         else if (args[0].equals("+")) expand();
         else throw new IllegalArgumentException("Illegal command line argument");
     }
